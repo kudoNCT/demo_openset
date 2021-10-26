@@ -1,0 +1,1 @@
+web: gunicorn svr_model:app 0.0.0.0:$PORT
