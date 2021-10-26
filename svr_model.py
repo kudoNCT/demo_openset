@@ -11,6 +11,7 @@ from models.MBF_glin360.MBF_glin import *
 from models.face_detector.BlazeDetector import BlazeFaceDetector
 import face_alignment
 from models.face_align.face_align_model import get_dst, alignment
+import json
 
 
 # Khởi tạo Flask
@@ -39,8 +40,16 @@ anchor_mean = pickle.loads(open('models/model_celeb/anchor_mean.pickle', "rb").r
 model_celeb.set_anchors(torch.Tensor(anchor_mean))
 model_celeb.eval()
 
+dist_label_name = json.loads(open('dist_label_vnceleb.txt', encoding='utf-8').read())
+
 
 # Hàm xử lý request
+@app.route("/check_list")
+def check_list():
+    with open("dist_label_vnceleb.txt","r",encoding="utf-8") as f:
+        content = f.read()
+    return content
+
 @app.route("/", methods=['GET', 'POST'])
 def home_page():
     # Nếu là POST (gửi file)
@@ -81,7 +90,10 @@ def home_page():
                     th = 3.600184650310259
                     #th = 999
                     person,score = predict_person_from_image(embed_result,model_celeb,th)
-                    extra = f"Dự đoán người : {person} with score {score}"
+                    fn_person = dist_label_name[str(person)] if person != -999 else "Unknown"
+                    if fn_person == "":
+                        fn_person = str(person)
+                    extra = f"Dự đoán : {fn_person}"
 
                     cv2.imwrite(path_to_save, face)
 
